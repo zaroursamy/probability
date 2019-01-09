@@ -1,15 +1,15 @@
 package main
 
-import api.Prob
-import api.Prob.Bernoulli
+import api.Distribution
+import api.Distribution.Bernoulli
 
 object MainBurglary extends App {
 
-  val pBurglary: Prob[Boolean] = Bernoulli(0.01)
+  val pBurglary: Distribution[Boolean] = Bernoulli(0.01)
 
-  val pEarthquake: Prob[Boolean] = Bernoulli(0.0001)
+  val pEarthquake: Distribution[Boolean] = Bernoulli(0.0001)
 
-  def pAlarm(burglary: Prob[Boolean], earthquake: Prob[Boolean]): Prob[Boolean] = (for {
+  def pAlarm(burglary: Distribution[Boolean], earthquake: Distribution[Boolean]): Distribution[Boolean] = (for {
     b ← burglary
     e ← earthquake
   } yield (b, e) match {
@@ -20,7 +20,7 @@ object MainBurglary extends App {
   })
     .flatMap(Bernoulli)
 
-  def pSamyCall(alarm: Prob[Boolean]): Prob[Boolean] = alarm.flatMap { b ⇒
+  def pSamyCall(alarm: Distribution[Boolean]): Distribution[Boolean] = alarm.flatMap { b ⇒
     if (b) Bernoulli(0.7)
     else Bernoulli(0.01)
   }

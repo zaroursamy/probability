@@ -1,8 +1,8 @@
 package pi
 
 import model.{ Point, Circle }
-import api.Prob
-import api.Prob.Uniform
+import api.Distribution
+import api.Distribution.Uniform
 import math.pow
 
 /**
@@ -18,12 +18,12 @@ object Pi {
 
     val circle = Circle(cx, cy, rayon)
 
-    val probPoint: Prob[Point] = for {
+    val probPoint: Distribution[Point] = for {
       x ← Uniform(0, 1)
       y ← Uniform(0, 1)
     } yield Point(x, y)
 
-    val probBool: Prob[Boolean] = probPoint map {
+    val probBool: Distribution[Boolean] = probPoint map {
       case point: Point if point in circle ⇒ true
       case _                               ⇒ false
     }

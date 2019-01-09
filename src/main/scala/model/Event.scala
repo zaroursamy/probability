@@ -3,8 +3,8 @@ package model
 import java.sql.Timestamp
 import java.time.Instant
 
-import api.Prob
-import api.Prob.{ Bernoulli, DiscreteUniform, Uuid }
+import api.Distribution
+import api.Distribution.{ Bernoulli, DiscreteUniform, Uuid }
 import model.EventType.generateEventType
 
 case class Event(
@@ -19,7 +19,7 @@ object Event {
    * @param ts
    * @return
    */
-  def evtP(ts: Timestamp): Prob[EventType] = {
+  def evtP(ts: Timestamp): Distribution[EventType] = {
     if (ts.getHours <= 3 || ts.getHours >= 20) Bernoulli(0.3).flatMap(generateEventType)
     else Bernoulli(0.8).flatMap(generateEventType)
   }
@@ -28,9 +28,9 @@ object Event {
    * Event generator
    * @return
    */
-  def probEvent(from: Instant = Instant.now()): Prob[Event] = {
+  def probEvent(from: Instant = Instant.now()): Distribution[Event] = {
 
-    val tsP: Prob[Timestamp] = Prob(() ⇒ {
+    val tsP: Distribution[Timestamp] = Distribution(() ⇒ {
       val seq: Seq[Timestamp] = (0 to 24 * 3600).map(s ⇒ new Timestamp((from.getEpochSecond + s) * 1000))
       DiscreteUniform(seq).get
     }

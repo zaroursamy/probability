@@ -1,10 +1,10 @@
 package main
 
-import api.Prob
-import api.Prob.Ip
+import api.Distribution
+import api.Distribution.Ip
 import config.SparkConfig.ss
 import frameless.TypedDataset
-import model.{Event, Video}
+import model.{ Event, Video }
 import injection.Frameless._
 
 object MainGenerateDataset extends App {
@@ -16,7 +16,7 @@ object MainGenerateDataset extends App {
 
   System.exit(0)
 
-  val adEventP: Prob[Event] = Event.probEvent()
+  val adEventP: Distribution[Event] = Event.probEvent()
 
   val eventDS: TypedDataset[Event] = TypedDataset.create(adEventP.sample(N)).persist()
 

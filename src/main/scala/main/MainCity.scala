@@ -1,6 +1,6 @@
 package main
 
-import api.Prob.Cities
+import api.Distribution.Cities
 import model._
 import City.dist
 

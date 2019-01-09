@@ -4,8 +4,8 @@ import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
 
-import api.Prob
-import api.Prob.{ DiscreteUniform, Poisson, Uuid }
+import api.Distribution
+import api.Distribution.{ DiscreteUniform, Poisson, Uuid }
 
 sealed trait DiffuseurType
 case object Sport extends DiffuseurType
@@ -72,9 +72,9 @@ object Diffuseur {
 
   def genererEvenement() = {
 
-    val probUUID: Prob[UUID] = Uuid.map(UUID.fromString)
+    val probUUID: Distribution[UUID] = Uuid.map(UUID.fromString)
 
-    val probDiffuseurName: Prob[DiffuseurName] = DiscreteUniform(
+    val probDiffuseurName: Distribution[DiffuseurName] = DiscreteUniform(
       Seq.fill(6)(Adidas) ++
         Seq.fill(5)(Nike) ++
         Seq.fill(2)(Dior)
@@ -83,7 +83,7 @@ object Diffuseur {
     def nbDiffusion(name: DiffuseurName) = name match {
       case Nike | Adidas ⇒ {
 
-        val probTS: Prob[Timestamp] = {
+        val probTS: Distribution[Timestamp] = {
           val nowMs = Instant.now().getEpochSecond * 1000
           val fromNowToOneDay = (1L to 24 * 3600).map(i ⇒ new Timestamp(i * 1000 + nowMs))
           DiscreteUniform(fromNowToOneDay)

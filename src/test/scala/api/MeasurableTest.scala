@@ -2,7 +2,7 @@ package api
 
 import org.scalatest.FunSuite
 import Measurable._
-import model.{Coin, Head, Tail}
+import model.{ Coin, Head, Tail }
 
 class MeasurableTest extends FunSuite {
 
@@ -12,7 +12,7 @@ class MeasurableTest extends FunSuite {
     println("mu(Head, Tail) = " + muCoin.mu(Head, Tail))
 
     assert(muCoin.mu(Head) == 2)
-    assert(muCoin.mu(Head, Tail) == muCoin.mu(Head)+muCoin.mu(Tail))
+    assert(muCoin.mu(Head, Tail) == muCoin.mu(Head) + muCoin.mu(Tail))
 
     println("comp(Head) = " + muCoin.complementaire(Set(Head)))
     assert(muCoin.complementaire(Set(Head)) == Set(Tail))
