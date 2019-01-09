@@ -1,10 +1,13 @@
 package api
 
 import java.util.UUID
+
+import model.City
+
 import scala.annotation.tailrec
 import scala.util.Random
 
-trait Prob[+T] { self ⇒
+trait Prob[T] extends Measurable[T] { self ⇒
 
   def get: T
 
@@ -14,16 +17,23 @@ trait Prob[+T] { self ⇒
 
   def flatMap[U](f: T ⇒ Prob[U]): Prob[U] = Prob(() ⇒ f(get).get)
 
-  def filter(pred: T ⇒ Boolean): Prob[T] = new Prob[T] {
+  def list(n: Int): Prob[Seq[T]] = Prob(() ⇒ sample(n))
+
+  def filter(pred: T ⇒ Boolean = _ => true): Prob[T] = new Prob[T] {
 
     @tailrec
     override def get: T = {
       val sample = self.get
       if (pred(sample)) sample else get
     }
+
   }
 
-  def prob(pred: T ⇒ Boolean, n: Int = 99): Double = sample(n).count(pred).toDouble / n
+  def probability(pred: T ⇒ Boolean = _=>true, n: Int = 100000): Double = sample(n).count(pred).toDouble / n
+
+  override def mu(t: T*): Double = t.map(e ⇒ probability(_ ⇒ e == t)).sum
+
+  override def universe: Set[T] = Set.empty
 
   def density[U](factor: T ⇒ U, n: Int = 99): Map[U, Double] = sample(n).groupBy(factor).map { case (k, it) ⇒ k -> it.size.toDouble / n }
 
@@ -35,9 +45,25 @@ object Prob {
     override def get: T = _get()
   }
 
-  def pure[A](a: A): Prob[A] = Prob(() => a)
+  def pure[A](a: A): Prob[A] = Prob(() ⇒ a)
 
-  def choose[A](xs: Seq[A]): Prob[A] = Prob(() => xs.apply(Random.nextInt(xs.size)))
+  def shuffle[T](list: List[T]): List[T] = {
+
+    var N = list.length
+    var accList = list
+    var initList = List.empty[T]
+
+    while (N != 0) {
+      val selected = DiscreteUniform(accList).get
+
+      initList = selected :: initList
+      accList = accList.filterNot(_ == selected)
+      N -= 1
+
+    }
+
+    initList
+  }
 
   implicit class ProbDouble(prob: Prob[Double]) {
 
@@ -58,8 +84,22 @@ object Prob {
 
   }
 
+  final case class DiscreteUniform[T](xs: Seq[T]) extends Prob[T] {
+    override def get: T = {
+      Uniform(0, 1).map(u ⇒ xs.apply((u * xs.length).toInt)).get
+    }
+  }
+
+  final case class Cities(cities: List[City]) extends Prob[Seq[City]] {
+    override def get: Seq[City] = Prob.shuffle(cities)
+  }
+
   final case class Bernoulli(d: Double) extends Prob[Boolean] {
     override def get: Boolean = if (Uniform(0, 1).get <= d) true else false
+  }
+
+  case object Ip extends Prob[String] {
+    override def get: String = DiscreteUniform(100 to 255).sample(4).mkString(".")
   }
 
   final case object Uuid extends Prob[String] {
@@ -82,8 +122,8 @@ object Prob {
     }
   }
 
-  final case class Poisson(lambda: Double) extends Prob[Double] {
-    override def get: Double = {
+  final case class Poisson(lambda: Double) extends Prob[Int] {
+    override def get: Int = {
 
       val u = Uniform(0, 1)
       val L = math.exp(-lambda)

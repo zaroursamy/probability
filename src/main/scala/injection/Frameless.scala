@@ -8,7 +8,7 @@ object Frameless {
 
   import frameless._
 
-  implicit val eventTypeInjection: Injection[EventType, EventTypeInj] = Injection[EventType, EventTypeInj](
+  implicit def eventTypeInjection: Injection[EventType, EventTypeInj] = Injection[EventType, EventTypeInj](
 
     {
       case Picture(win)    ⇒ EventTypeInj(win, None)

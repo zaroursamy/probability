@@ -1,13 +1,13 @@
 package model
 
-sealed trait Piece {
+sealed trait Coin {
   def isPile: Boolean
   def isFace: Boolean = !isPile
 }
 
-case object Pile extends Piece {
+case object Tail extends Coin {
   override def isPile: Boolean = true
 }
-case object Face extends Piece {
+case object Head extends Coin {
   override def isPile: Boolean = false
 }

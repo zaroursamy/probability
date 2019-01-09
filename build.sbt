@@ -14,7 +14,9 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkV,
   "org.apache.spark" %% "spark-sql" % sparkV,
   "org.typelevel" %% "frameless-dataset" % framelessVersion,
-  "org.typelevel" %% "cats-core" % catsV
+  "org.typelevel" %% "cats-core" % catsV,
+  "org.typelevel" %% "cats-free" % catsV,
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 )
 

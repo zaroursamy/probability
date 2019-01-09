@@ -18,7 +18,7 @@ object EventType {
    * @param bool
    * @return
    */
-  def generateEventType(bool: Boolean): Prob[EventType] = if (bool) Poisson(5).map(Picture)
+  def generateEventType(bool: Boolean): Prob[EventType] = if (bool) Poisson(5).map(x ⇒ Picture(x.toDouble))
   else {
     for {
       win ← Poisson(8)

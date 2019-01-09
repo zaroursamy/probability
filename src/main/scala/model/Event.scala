@@ -2,20 +2,20 @@ package model
 
 import java.sql.Timestamp
 import java.time.Instant
+
 import api.Prob
-import api.Prob.{ Bernoulli, Uuid }
+import api.Prob.{ Bernoulli, DiscreteUniform, Uuid }
 import model.EventType.generateEventType
 
 case class Event(
     id: String,
     ts: Long,
-    `type`: EventType
-)
+    `type`: EventType)
 
 object Event {
 
   /**
-   * Between 8pm and 3am: videos have more chance to be generated
+   * Between 8pm and 3am: videos have more chance to be generated than pictures
    * @param ts
    * @return
    */
@@ -32,7 +32,7 @@ object Event {
 
     val tsP: Prob[Timestamp] = Prob(() ⇒ {
       val seq: Seq[Timestamp] = (0 to 24 * 3600).map(s ⇒ new Timestamp((from.getEpochSecond + s) * 1000))
-      Prob.choose(seq).get
+      DiscreteUniform(seq).get
     }
     )
 
