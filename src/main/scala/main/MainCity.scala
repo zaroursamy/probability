@@ -1,16 +1,16 @@
 package main
 
-import api.Distribution.Cities
+import api.Prob.Cities
 import model._
 import City.dist
+import api.Prob
 
 object MainCity extends App {
 
   val cities: List[City] = Paris :: Marseille :: Lyon :: Bordeaux :: Amsterdam :: Rome :: Nil
 
-  val allDists: Seq[(Seq[City], Double)] = Cities(cities)
-    .filter(_.apply(1) == Amsterdam)
-    .sample(100)
+  val allDists: Seq[(Seq[City], Double)] = Prob
+    .sample(100)(Cities(cities).filter(_.apply(1) == Amsterdam))
     .map { aSet ⇒
       aSet
         .foldLeft((Seq.empty[City], 0d, Option.empty[City])) {

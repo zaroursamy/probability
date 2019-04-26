@@ -1,6 +1,5 @@
 package main
 
-import api.Distribution.Poisson
 import pi.Pi.generate
 
 object MainPiEstimator extends App {

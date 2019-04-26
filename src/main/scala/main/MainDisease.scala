@@ -1,7 +1,7 @@
 package main
 
-import api.Distribution
-import api.Distribution.Bernoulli
+import api.Prob
+import api.Prob.Bernoulli
 
 /**
  * Vous êtes directeur de cabinet du ministre de la santé.
@@ -14,7 +14,7 @@ object MainDisease extends App {
 
   val probMalade = Bernoulli(0.0001)
 
-  def probPositifTest(pMalade: Distribution[Boolean]): Distribution[Boolean] = pMalade.flatMap { b ⇒
+  def probPositifTest(pMalade: Prob[Boolean]): Prob[Boolean] = pMalade.flatMap { b ⇒
     if (b) Bernoulli(0.99)
     else Bernoulli(0.001)
   }

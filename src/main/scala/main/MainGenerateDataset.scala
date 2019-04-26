@@ -1,7 +1,7 @@
 package main
 
-import api.Distribution
-import api.Distribution.Ip
+import api.Prob
+import api.Prob.Ip
 import config.SparkConfig.ss
 import frameless.TypedDataset
 import model.{ Event, Video }
@@ -12,22 +12,18 @@ object MainGenerateDataset extends App {
 
   val N = 100
 
-  Ip.sample(10).foreach(println)
+  val adEventP: Prob[Event] = Event.probEvent()
 
-  System.exit(0)
-
-  val adEventP: Distribution[Event] = Event.probEvent()
-
-  val eventDS: TypedDataset[Event] = TypedDataset.create(adEventP.sample(N)).persist()
+  val eventDS: TypedDataset[Event] = TypedDataset.create(Prob.sample(N)(adEventP)).persist()
 
   eventDS.dataset.show
 
-  ss.time(
-    println(s"[Dataset] Prob(video) = ${eventDS.toDF.filter("type.duration is not null").count().toDouble / N}")
-  )
 
-  ss.time(
+    println(s"[Dataset] Prob(video) = ${eventDS.toDF.filter("type.duration is not null").count().toDouble / N}")
+
+
+
     println(s"[Prob] Prob(video) = ${adEventP.probability(_.`type`.isInstanceOf[Video], N)}")
-  )
+
 
 }

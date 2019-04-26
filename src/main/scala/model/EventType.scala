@@ -1,7 +1,7 @@
 package model
 
-import api.Distribution
-import api.Distribution.{ Poisson, Uniform }
+import api.Prob
+import api.Prob.{ Poisson, Uniform }
 
 sealed trait EventType extends Product with Serializable
 
@@ -18,7 +18,7 @@ object EventType {
    * @param bool
    * @return
    */
-  def generateEventType(bool: Boolean): Distribution[EventType] = if (bool) Poisson(5).map(x ⇒ Picture(x.toDouble))
+  def generateEventType(bool: Boolean): Prob[EventType] = if (bool) Poisson(5).map(x ⇒ Picture(x.toDouble))
   else {
     for {
       win ← Poisson(8)
