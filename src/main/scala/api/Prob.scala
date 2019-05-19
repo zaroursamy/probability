@@ -11,7 +11,9 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   def get: T
 
-  def map[U](f: T ⇒ U): Prob[U] = flatMap(f.andThen(Prob.unit))
+  def ap[U](fp: Prob[T ⇒ U]): Prob[U] = fp map (_(get))
+
+  def map[U](f: T ⇒ U): Prob[U] = flatMap(f.andThen(unit))
 
   def flatMap[U](f: T ⇒ Prob[U]): Prob[U] = Prob(() ⇒ f(get).get)
 
@@ -29,13 +31,13 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   override def mu(t: T*): Double = t.map(e ⇒ probability[T](_ == e)(self)).sum
 
-  def density[U](factor: T ⇒ U, n: Int = 99): Map[U, Double] = sample(n)(self).groupBy(factor).map { case (k, it) ⇒ k -> it.size.toDouble / n }
-
 }
 
 object Prob {
 
   def probability[T](pred: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 100000)(prob: Prob[T]): Double = sample(n)(prob).count(pred).toDouble / n
+
+  def density[T, U](factor: T ⇒ U, n: Int = 99)(prob: Prob[T]): Map[U, Double] = sample(n)(prob).groupBy(factor).map { case (k, it) ⇒ k -> it.size.toDouble / n }
 
   def apply[T](_get: () ⇒ T): Prob[T] = new Prob[T] {
     override def get: T = _get()

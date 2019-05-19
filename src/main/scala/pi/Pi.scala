@@ -18,17 +18,12 @@ object Pi {
 
     val circle = Circle(cx, cy, rayon)
 
-    val probPoint: Prob[Point] = for {
+    val probPointInCircle = for {
       x ← Uniform(0, 1)
       y ← Uniform(0, 1)
-    } yield Point(x, y)
+    } yield Point(x, y) in circle
 
-    val probBool: Prob[Boolean] = probPoint map {
-      case point: Point if point in circle ⇒ true
-      case _                               ⇒ false
-    }
-
-    val probInCircle = probability[Boolean](identity, N)(probBool)
+    val probInCircle = probability[Boolean](identity, N)(probPointInCircle)
     val circleArea = probInCircle * squareArea
 
     circleArea / pow(rayon, 2)
