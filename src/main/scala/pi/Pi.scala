@@ -32,6 +32,5 @@ object Pi {
     val circleArea = probInCircle * squareArea
 
     circleArea / pow(rayon, 2)
-
   }
 }

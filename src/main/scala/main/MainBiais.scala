@@ -1,14 +1,16 @@
 package main
 
 import api.Prob
+import Prob._
+import model.{ Head, Tail }
 
 object MainBiais extends App {
 
-  val data = List(false, false, true, false, false)
+  val data = List(Tail, Tail, Head, Tail, Tail)
   val N = data.size
 
-  val prior = Prob.Uniform(0, 1)
-  def check(p: Double): Boolean = data == Prob.sample(N)(Prob.Bernoulli(p)).toList
+  val prior = Uniform(0, 1)
+  def check(p: Double): Boolean = data == sample(N)(Bernoulli(p).mapp(Head, Tail)).toList
 
   def accept[T](guesser: Prob[T], checker: T ⇒ Boolean): T = {
 
