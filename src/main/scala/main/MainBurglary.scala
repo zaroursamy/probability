@@ -1,7 +1,7 @@
 package main
 
 import api.Prob
-import api.Prob.Bernoulli
+import api.Prob._
 
 object MainBurglary extends App {
 
@@ -27,13 +27,13 @@ object MainBurglary extends App {
 
   val N = 100000
 
-  val probBurglary = pBurglary.probability(identity, N)
+  val probBurglary = probability[Boolean](identity, N)(pBurglary)
   println(s"P(burglary = true) = $probBurglary")
 
-  val probSamyCall = pSamyCall(pAlarm(pBurglary, pEarthquake)).probability(identity, N)
+  val probSamyCall = probability[Boolean](identity, N)(pSamyCall(pAlarm(pBurglary, pEarthquake)))
   println(s"P(samyCall = true) = $probSamyCall")
 
-  val probSamyCall_burglary = pSamyCall(pAlarm(pBurglary.filter(identity), pEarthquake)).probability(identity, N)
+  val probSamyCall_burglary = probability[Boolean](identity, N)(pSamyCall(pAlarm(pBurglary.filter(identity), pEarthquake)))
   println(s"P(samyCall = true | burglary = true) = $probSamyCall_burglary")
 
   println(s"P(burglary = true | samyCall = true) = ${probSamyCall_burglary * probBurglary / probSamyCall}")

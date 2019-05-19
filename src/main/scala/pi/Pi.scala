@@ -2,7 +2,7 @@ package pi
 
 import model.{ Point, Circle }
 import api.Prob
-import api.Prob.Uniform
+import api.Prob._
 import math.pow
 
 /**
@@ -28,7 +28,7 @@ object Pi {
       case _                               ⇒ false
     }
 
-    val probInCircle = probBool probability (identity, N)
+    val probInCircle = probability[Boolean](identity, N)(probBool)
     val circleArea = probInCircle * squareArea
 
     circleArea / pow(rayon, 2)

@@ -1,7 +1,7 @@
 package main
 
 import api.Prob
-import api.Prob.Bernoulli
+import api.Prob._
 
 /**
  * Vous êtes directeur de cabinet du ministre de la santé.
@@ -21,9 +21,9 @@ object MainDisease extends App {
 
   // P(malade | positif) = P(positif | malade) * P(malade)/P(positif)
 
-  val pPositif = probPositifTest(probMalade).probability(identity)
-  val pMalade = probMalade.probability(identity)
-  val pPositif_malade = probPositifTest(probMalade.filter(identity)).probability(identity)
+  val pPositif = probability[Boolean](identity)(probPositifTest(probMalade))
+  val pMalade = probability[Boolean](identity)(probMalade)
+  val pPositif_malade = probability[Boolean](identity)(probPositifTest(probMalade.filter(identity)))
 
   println(s"P(positif) = $pPositif")
   println(s"P(malade) = $pMalade")

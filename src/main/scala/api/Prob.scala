@@ -7,7 +7,7 @@ import scala.util.Random
 
 trait Prob[T] extends Measurable[T] { self ⇒
 
-  import Prob.sample
+  import Prob._
 
   def get: T
 
@@ -27,15 +27,15 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   }
 
-  def probability(pred: T ⇒ Boolean = _ ⇒ true, n: Int = 100000): Double = sample(n)(self).count(pred).toDouble / n
-
-  override def mu(t: T*): Double = t.map(e ⇒ probability(_ == e)).sum
+  override def mu(t: T*): Double = t.map(e ⇒ probability[T](_ == e)(self)).sum
 
   def density[U](factor: T ⇒ U, n: Int = 99): Map[U, Double] = sample(n)(self).groupBy(factor).map { case (k, it) ⇒ k -> it.size.toDouble / n }
 
 }
 
 object Prob {
+
+  def probability[T](pred: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 100000)(prob: Prob[T]): Double = sample(n)(prob).count(pred).toDouble / n
 
   def apply[T](_get: () ⇒ T): Prob[T] = new Prob[T] {
     override def get: T = _get()

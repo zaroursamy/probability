@@ -1,7 +1,7 @@
 package main
 
 import api.Prob
-import api.Prob.{ Bernoulli, Normal }
+import api.Prob._
 
 object MainWeather extends App {
 
@@ -33,6 +33,6 @@ object MainWeather extends App {
 
   Prob.sample(10)(weather()).foreach(println)
 
-  println(weather().probability({ case (cl, tmp) ⇒ cl == 'cloudy && tmp >= 29 }, 1000))
+  println(probability[(Symbol, Long)]({ case (cl, tmp) ⇒ cl == 'cloudy && tmp >= 29 }, 1000)(weather()))
 
 }

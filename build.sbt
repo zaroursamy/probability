@@ -11,6 +11,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 )
 
+scalacOptions ++= Seq("Yliteral-types", "-language:implicitConversions", "-language:higherKinds")
+
 import scalariform.formatter.preferences._
   scalariformPreferences := scalariformPreferences.value
   .setPreference(AlignSingleLineCaseStatements, true)
