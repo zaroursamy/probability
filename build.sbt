@@ -2,22 +2,13 @@ name := "prob"
 
 version := "0.1"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.11.8"
 
-val sparkV = "2.3.1"
-val framelessVersion = "0.7.0"
-val catsV = "1.5.0"
-
-scalacOptions += "-Ypartial-unification"
+val wispV = "0.0.4"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % sparkV,
-  "org.apache.spark" %% "spark-sql" % sparkV,
-  "org.typelevel" %% "frameless-dataset" % framelessVersion,
-  "org.typelevel" %% "cats-core" % catsV,
-  "org.typelevel" %% "cats-free" % catsV,
+  "com.quantifind" %% "wisp" % wispV,
   "org.scalatest" %% "scalatest" % "3.0.5" % "test"
-
 )
 
 import scalariform.formatter.preferences._

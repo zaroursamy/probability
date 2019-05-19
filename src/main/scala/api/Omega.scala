@@ -1,16 +1,9 @@
 package api
 
-import model._
-
 trait Omega[T] {
-  def universe: Set[T]
-}
 
-object Omega {
+  def complementary(omega: Set[T], a: Set[T]): Set[T] = omega -- a
 
-  def apply[T](u: ⇒ Set[T]): Omega[T] = new Omega[T] {
-    override def universe: Set[T] = u
-  }
+  def union(a: Set[T], b: Set[T]): Set[T] = a ++ b
 
-  implicit val omgCoin: Omega[Coin] = Omega(Set(Head, Tail))
 }

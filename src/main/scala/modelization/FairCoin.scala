@@ -17,14 +17,11 @@ object FairCoin extends App {
     println(weight.density(identity, 500).toList)
   }
 
-
-
-
   println("Mean:")
-  (0 until 100).map{_ =>
+  (0 until 100).map { _ ⇒
     weight.density(identity, 500).toList
-  }.reduce{ (l1, l2) =>
+  }.reduce { (l1, l2) ⇒
 
-    List(("H", (l1.head._2+l2.head._2)/2), ("T", (l1.last._2+l2.last._2)/2))
+    List(("H", (l1.head._2 + l2.head._2) / 2), ("T", (l1.last._2 + l2.last._2) / 2))
   }.foreach(println)
 }
