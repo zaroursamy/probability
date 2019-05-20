@@ -5,9 +5,8 @@ import api.Prob
 import api.Prob._
 import math.pow
 
-/**
- * 3,141592653589793
- */
+/** 3,141592653589793
+  */
 object Pi {
 
   def generate: Double = {

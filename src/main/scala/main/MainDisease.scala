@@ -3,13 +3,12 @@ package main
 import api.Prob
 import api.Prob._
 
-/**
- * Vous êtes directeur de cabinet du ministre de la santé.
- * Une maladie est présente dans la population, dans la proportion d'une personne malade sur 10000.
- * Un responsable d'un grand laboratoire pharmaceutique vient vous vanter son nouveau test de dépistage :
- *   si une personne est malade, le test est positif à 99%.
- *   Si une personne n'est pas malade, le test est positif à 0,1%.
- */
+/** Vous êtes directeur de cabinet du ministre de la santé.
+  * Une maladie est présente dans la population, dans la proportion d'une personne malade sur 10000.
+  * Un responsable d'un grand laboratoire pharmaceutique vient vous vanter son nouveau test de dépistage :
+  *   si une personne est malade, le test est positif à 99%.
+  *   Si une personne n'est pas malade, le test est positif à 0,1%.
+  */
 object MainDisease extends App {
 
   val probMalade = Bernoulli(0.0001)
