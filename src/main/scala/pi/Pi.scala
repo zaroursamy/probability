@@ -22,7 +22,7 @@ object Pi {
       y ← Uniform(0, 1)
     } yield Point(x, y) in circle
 
-    val probInCircle = probability[Boolean](identity, N)(probPointInCircle)
+    val probInCircle = probPointInCircle.probability(identity, N)
     val circleArea = probInCircle * squareArea
 
     circleArea / pow(rayon, 2)

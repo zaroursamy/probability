@@ -17,7 +17,7 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   def flatMap[U](f: T ⇒ Prob[U]): Prob[U] = Prob(() ⇒ f(get).get)
 
-  def list(n: Int): Prob[Seq[T]] = Prob(() ⇒ sample(n)(self))
+  def list(n: Int): Prob[Seq[T]] = Prob(() ⇒ sample(n))
 
   def filter(pred: T ⇒ Boolean = _ ⇒ true): Prob[T] = new Prob[T] {
 
@@ -29,23 +29,35 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   }
 
-  override def mu(t: T*): Double = t.map(e ⇒ probability[T](_ == e)(self)).sum
+  override def mu(t: T*): Double = t.map(e ⇒ probability(_ == e)).sum
+
+  def probability(pred: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 100000): Double = sample(n).count(pred).toDouble / n
+
+  def density[U](factor: T ⇒ U, n: Int = 99): Map[U, Double] = sample(n).groupBy(factor).map { case (k, it) ⇒ k -> it.size.toDouble / n }
+
+  def sample(n: Int): Stream[T] = Stream.fill(n)(self.get)
 
 }
 
 object Prob {
 
-  def probability[T](pred: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 100000)(prob: Prob[T]): Double = sample(n)(prob).count(pred).toDouble / n
+  def accept[T](self: Prob[T], checker: T ⇒ Boolean): T = {
 
-  def density[T, U](factor: T ⇒ U, n: Int = 99)(prob: Prob[T]): Map[U, Double] = sample(n)(prob).groupBy(factor).map { case (k, it) ⇒ k -> it.size.toDouble / n }
+    var accept = false
+    var guess = self.get
+
+    while (!accept) {
+      guess = self.get
+      accept = checker(guess)
+    }
+    guess
+  }
 
   def apply[T](_get: () ⇒ T): Prob[T] = new Prob[T] {
     override def get: T = _get()
   }
 
   def apply[T](t: T): Prob[T] = unit(t)
-
-  def sample[T](n: Int)(implicit prob: Prob[T]): Stream[T] = Stream.fill(n)(prob.get)
 
   def unit[A](a: A): Prob[A] = Prob(() ⇒ a)
 
@@ -81,11 +93,11 @@ object Prob {
   }
 
   final case class Binomial(n: Int, d: Double) extends Prob[Int] {
-    override def get: Int = sample(n)(Bernoulli(d)).count(_ == true)
+    override def get: Int = Bernoulli(d).sample(n).count(_ == true)
   }
 
   case object Ip extends Prob[String] {
-    override def get: String = sample(4)(DiscreteUniform(100 to 255)).mkString(".")
+    override def get: String = DiscreteUniform(100 to 255).sample(4).mkString(".")
   }
 
   final case object Uuid extends Prob[String] {

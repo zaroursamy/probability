@@ -23,9 +23,10 @@ class ProbTest extends FunSuite {
       override def get: Double => Int = Bernoulli(0.5).mapp((d: Double) => math.round(d).toInt%2, (d:Double) => math.round(d).toInt%3).get
     }
 
-    val apGenerateModulo: Prob[Int] = Uniform(0,10).ap(generateModulo)
+    val u: Prob[Double] = Uniform(0, 10)
+    val apGenerateModulo: Prob[Int] = u.ap(generateModulo)
 
-    Prob.sample(10)(apGenerateModulo).foreach(println)
+    apGenerateModulo.sample(10).foreach(println)
   }
 
   test("testFilter") {

@@ -20,9 +20,9 @@ object MainDisease extends App {
 
   // P(malade | positif) = P(positif | malade) * P(malade)/P(positif)
 
-  val pPositif = probability[Boolean](identity)(probPositifTest(probMalade))
-  val pMalade = probability[Boolean](identity)(probMalade)
-  val pPositif_malade = probability[Boolean](identity)(probPositifTest(probMalade.filter(identity)))
+  val pPositif = probPositifTest(probMalade).probability(identity)
+  val pMalade = probMalade.probability(identity)
+  val pPositif_malade = probPositifTest(probMalade.filter(identity)).probability(identity)
 
   println(s"P(positif) = $pPositif")
   println(s"P(malade) = $pMalade")

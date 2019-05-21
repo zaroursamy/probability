@@ -31,8 +31,8 @@ object MainWeather extends App {
 
   }
 
-  Prob.sample(10)(weather()).foreach(println)
+  weather().sample(10).foreach(println)
 
-  println(probability[(Symbol, Long)]({ case (cl, tmp) ⇒ cl == 'cloudy && tmp >= 29 }, 1000)(weather()))
+  println(weather().probability({ case (cl, tmp) ⇒ cl == 'cloudy && tmp >= 29 }, 1000))
 
 }
