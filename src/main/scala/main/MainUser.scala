@@ -70,13 +70,7 @@ User(948a468f-1d45-49cb-af0d-7f8cb8d7b085,122.191.129.240,2019-06-17 14:00:54.0)
     for {
       cat ← probCategory
       pageType ← probType(cat)
-    } yield Clic(
-      userId = user.id,
-      ip = user.ip,
-      pageCategory = cat,
-      clicType = pageType,
-      ts = ts
-    )
+    } yield Clic(user.id, user.ip, cat, pageType, ts)
 
   }
 
