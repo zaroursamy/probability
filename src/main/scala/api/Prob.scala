@@ -4,7 +4,6 @@ import java.util.UUID
 
 import scala.annotation.tailrec
 import scala.util.Random
-import math.{ log, cos }
 
 trait Prob[T] extends Measurable[T] { self ⇒
 
@@ -14,7 +13,7 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   def sample(n: Int): Stream[T] = Stream.fill(n)(self.get)
 
-  def probability(predicat: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 100000): Double = sample(n).count(predicat).toDouble / n
+  def probability(predicat: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 10000): Double = sample(n).count(predicat).toDouble / n
 
   override def mu(t: T*): Double = t.map(e ⇒ probability(_ == e)).sum
 
@@ -30,6 +29,7 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   def filter(pred: T ⇒ Boolean = _ ⇒ true): Prob[T] = new Prob[T] {
 
+    Nil.flatten
     @tailrec
     override def get: T = {
       val sample = self.get
@@ -43,6 +43,8 @@ trait Prob[T] extends Measurable[T] { self ⇒
 }
 
 object Prob {
+
+  def flatten[T](p: Prob[Prob[T]]): Prob[T] = p.flatMap(identity)
 
   def product[A, B](pA: Prob[A], pB: Prob[B]): Prob[(A, B)] = pA.ap(pB.map(b ⇒ (a: A) ⇒ (a, b)))
 

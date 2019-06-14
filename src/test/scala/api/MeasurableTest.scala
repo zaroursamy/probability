@@ -2,6 +2,7 @@ package api
 
 import model.{ Coin, Head, Tail }
 import org.scalatest.FunSuite
+import Measurable.mu
 
 class MeasurableTest extends FunSuite {
 
@@ -13,9 +14,9 @@ class MeasurableTest extends FunSuite {
       case _    ⇒ 0
     }
 
-    assert(Measurable.mu[Coin](Head) == 2)
-    assert(Measurable.mu[Coin](Head, Tail) == 3)
-    assert(Measurable.mu[Coin](Tail, Tail) == 1)
+    assert(mu[Coin](Head) == 2)
+    assert(mu[Coin](Head, Tail) == 3)
+    assert(mu[Coin](Tail, Tail) == 1)
   }
 
 }
