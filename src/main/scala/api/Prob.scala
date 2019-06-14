@@ -46,6 +46,8 @@ object Prob {
 
   def product[A, B](pA: Prob[A], pB: Prob[B]): Prob[(A, B)] = pA.ap(pB.map(b ⇒ (a: A) ⇒ (a, b)))
 
+  def map2[A, B, C](pA: Prob[A], pB: Prob[B])(f: (A, B) ⇒ C): Prob[C] = product(pA, pB).map { case (a, b) ⇒ f(a, b) }
+
   def accept[T](prior: Prob[T], checker: T ⇒ Boolean): T = {
 
     var accept = false
