@@ -7,7 +7,7 @@ object MainWeather extends App {
 
   def weather(): Prob[(Symbol, Long)] = {
 
-    val cloudy = Bernoulli(0.3).mapp('cloudy, 'sunny)
+    val cloudy = Bernoulli(0.3).to('cloudy, 'sunny)
 
     val meanTemp = Map(
       'cloudy -> 29,

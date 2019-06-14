@@ -4,14 +4,23 @@ import java.util.UUID
 
 import scala.annotation.tailrec
 import scala.util.Random
+import math.{ log, cos }
 
 trait Prob[T] extends Measurable[T] { self ⇒
 
-  import Prob._
+  import Prob.unit
 
   def get: T
 
+  def sample(n: Int): Stream[T] = Stream.fill(n)(self.get)
+
+  def probability(predicat: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 100000): Double = sample(n).count(predicat).toDouble / n
+
+  override def mu(t: T*): Double = t.map(e ⇒ probability(_ == e)).sum
+
   def ap[U](fp: Prob[T ⇒ U]): Prob[U] = fp map (_(get))
+
+  def mapp[U](f: T ⇒ U): Prob[U] = Prob(() ⇒ f(get))
 
   def map[U](f: T ⇒ U): Prob[U] = flatMap(f.andThen(unit))
 
@@ -29,28 +38,24 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   }
 
-  override def mu(t: T*): Double = t.map(e ⇒ probability(_ == e)).sum
-
-  def probability(pred: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 100000): Double = sample(n).count(pred).toDouble / n
-
   def density[U](factor: T ⇒ U, n: Int = 99): Map[U, Double] = sample(n).groupBy(factor).map { case (k, it) ⇒ k -> it.size.toDouble / n }
-
-  def sample(n: Int): Stream[T] = Stream.fill(n)(self.get)
 
 }
 
 object Prob {
 
-  def accept[T](self: Prob[T], checker: T ⇒ Boolean): T = {
+  def product[A, B](pA: Prob[A], pB: Prob[B]): Prob[(A, B)] = pA.ap(pB.map(b ⇒ (a: A) ⇒ (a, b)))
+
+  def accept[T](prior: Prob[T], checker: T ⇒ Boolean): T = {
 
     var accept = false
-    var guess = self.get
+    var priorSample = prior.get
 
     while (!accept) {
-      guess = self.get
-      accept = checker(guess)
+      priorSample = prior.get
+      accept = checker(priorSample)
     }
-    guess
+    priorSample
   }
 
   def apply[T](_get: () ⇒ T): Prob[T] = new Prob[T] {
@@ -89,7 +94,7 @@ object Prob {
 
   final case class Bernoulli(d: Double) extends Prob[Boolean] {
     override def get: Boolean = Uniform(0, 1).get <= d
-    def mapp[T](succ: T, echec: T): Prob[T] = this.map(b ⇒ if (b) succ else echec)
+    def to[T](succ: T, echec: T): Prob[T] = this.map(b ⇒ if (b) succ else echec)
   }
 
   final case class Binomial(n: Int, d: Double) extends Prob[Int] {
@@ -105,7 +110,18 @@ object Prob {
   }
 
   final case class Normal(mean: Double, std: Double) extends Prob[Double] {
-    override def get: Double = mean + std * Random.nextGaussian()
+
+    override def get: Double = {
+
+      val n01 = (
+        for {
+          u1 ← Uniform(0, 1)
+          u2 ← Uniform(0, 1)
+        } yield math.sqrt(-2 * math.log(u1)) * math.cos(2 * math.Pi * u2)
+      ).get
+
+      mean + std * n01
+    }
   }
 
   final case class Uniform(min: Double, max: Double) extends Prob[Double] {

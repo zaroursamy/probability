@@ -6,4 +6,6 @@ trait Omega[T] {
 
   def union(a: Set[T], b: Set[T]): Set[T] = a ++ b
 
+  def intersection(a: Set[T], b: Set[T]): Set[T] = a intersect b
+
 }
