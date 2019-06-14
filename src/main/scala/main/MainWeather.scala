@@ -2,84 +2,85 @@ package main
 
 import api.Prob
 import api.Prob._
+import model._
 
 object MainWeather extends App {
 
-  val monthlyMeanTemp: Map[Symbol, Double] = Map(
-    'Janvier -> 5.9,
-    'Fevrier -> 6.8,
-    'Mars -> 10.1,
-    'Avril -> 12.7,
-    'Mai -> 16,
-    'Juin -> 19.8,
-    'Juillet -> 22.3,
-    'Aout -> 22,
-    'Septembre -> 19.2,
-    'Octobre -> 14.6,
-    'Novembre -> 10.2,
-    'Decembre -> 6.7
+  val monthlyMeanTemp: Map[Month, Double] = Map(
+    Jannuary -> 5.9,
+    February -> 6.8,
+    March -> 10.1,
+    April -> 12.7,
+    May -> 16,
+    June -> 19.8,
+    July -> 22.3,
+    August -> 22,
+    September -> 19.2,
+    October -> 14.6,
+    November -> 10.2,
+    December -> 6.7
   )
 
   val minMaxTemp = Map(
-    'Janvier -> (1.4, 10.4),
-    'Fevrier -> (6.8, 11.8),
-    'Mars -> (5.2, 15),
-    'Avril -> (7.7, 17.7),
-    'Mai -> (11, 21),
-    'Juin -> (14.2, 25.5),
-    'Juillet -> (16.3, 28.4),
-    'Aout -> (16.3, 27.7),
-    'Septembre -> (14, 24.5),
-    'Octobre -> (9.7, 19.6),
-    'Novembre -> (5.7, 14.7),
-    'Decembre -> (2.6, 10.9)
+    Jannuary -> (1.4, 10.4),
+    February -> (6.8, 11.8),
+    March -> (5.2, 15),
+    April -> (7.7, 17.7),
+    May -> (11, 21),
+    June -> (14.2, 25.5),
+    July -> (16.3, 28.4),
+    August -> (16.3, 27.7),
+    September -> (14, 24.5),
+    October -> (9.7, 19.6),
+    November -> (5.7, 14.7),
+    December -> (2.6, 10.9)
   )
 
-  val monthlyPrecip = Map(
-    'Janvier -> 38,
-    'Fevrier -> 29,
-    'Mars -> 39,
-    'Avril -> 25,
-    'Mai -> 24,
-    'Juin -> 22,
-    'Juillet -> 11,
-    'Aout -> 22,
-    'Septembre -> 36,
-    'Octobre -> 52,
-    'Novembre -> 32,
-    'Decembre -> 36
-  )
+  //  val monthlyPrecip = Map(
+  //    'Janvier -> 38,
+  //    'Fevrier -> 29,
+  //    'Mars -> 39,
+  //    'Avril -> 25,
+  //    'Mai -> 24,
+  //    'Juin -> 22,
+  //    'Juillet -> 11,
+  //    'Aout -> 22,
+  //    'Septembre -> 36,
+  //    'Octobre -> 52,
+  //    'Novembre -> 32,
+  //    Decembre -> 36
+  //  )
 
-  def weather(meanTemp: Map[Symbol, Int], stdTemp: Map[Symbol, Int], probCloudy: Prob[Symbol]): Prob[(Symbol, Double)] = {
+  def weather(mean: Map[Climate, Int], std: Map[Climate, Int], probClimate: Prob[Climate]): Prob[(Climate, Double)] = {
 
-    def probTemperature(cloudy: Symbol) = Normal(
-      meanTemp(cloudy),
-      stdTemp(cloudy)
+    def probTemperature(climate: Climate) = Normal(
+      mean(climate),
+      std(climate)
     )
 
     for {
-      c ← probCloudy
+      c ← probClimate
       t ← probTemperature(c)
     } yield c -> t
 
   }
 
   val meanMtp = Map(
-    'cloudy -> 20,
-    'sunny -> 26
+    Cloudy -> 20,
+    Sunny -> 26
   )
 
   val stdMtp = Map(
-    'cloudy -> 2,
-    'sunny -> 3
+    Cloudy -> 2,
+    Sunny -> 3
   )
 
-  val probCloudy = Bernoulli(0.16) to ('cloudy, 'sunny)
+  val probCloudy = Bernoulli(0.16) to (Cloudy, Sunny)
 
   val weatherMontpellier = weather(meanMtp, stdMtp, probCloudy)
 
   weatherMontpellier.sample(10).foreach(println)
-  println(weatherMontpellier.probability({ case (cl, tmp) ⇒ cl == 'cloudy && tmp >= 20 }, 30))
-  // 0.03333333333333333
+  println(weatherMontpellier.probability({ case (cl, tmp) ⇒ cl == Cloudy && tmp >= 20 }, 1000))
+  // 0.073
 
 }

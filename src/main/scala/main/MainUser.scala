@@ -52,21 +52,29 @@ User(5e42f77b-b59d-4d50-9083-30a115ba109f,143.131.115.182,2019-06-20 23:18:29.0)
 User(948a468f-1d45-49cb-af0d-7f8cb8d7b085,122.191.129.240,2019-06-17 14:00:54.0)
    */
 
-  val probCategory = DiscreteUniform(Seq("Health", "Sport", "Technology", "Science", "Business", "Entertainment"))
+  val probPageCategory = DiscreteUniform(Seq(
+    "Health",
+    "Sport",
+    "Technology",
+    "Science",
+    "Business",
+    "Entertainment"
+  ))
 
   def probType(category: String): Prob[String] =
 
-    if (Seq("Health", "Technology", "Science", "Business") contains category) product(Bernoulli(0.9), Bernoulli(0.5)) flatMap {
-      case (true, _)     ⇒ DiscreteUniform(Seq("mute", "stop"))
-      case (false, true) ⇒ unit("start")
-      case _             ⇒ DiscreteUniform(Seq("mute", "start", "stop"))
-    }
+    if (Seq("Health", "Technology", "Science", "Business") contains category)
+      product(Bernoulli(0.9), Bernoulli(0.5)) flatMap {
+        case (true, _)     ⇒ DiscreteUniform(Seq("mute", "stop"))
+        case (false, true) ⇒ unit("start")
+        case _             ⇒ DiscreteUniform(Seq("mute", "start", "stop"))
+      }
     else DiscreteUniform(Seq("mute", "start", "stop"))
 
   def clicProb(user: User): Prob[Clic] = for {
-    cat ← probCategory
-    pageType ← probType(cat)
-  } yield Clic(user.id, user.ip, cat, pageType, user.firstInteraction)
+    pageCat ← probPageCategory
+    clicType ← probType(pageCat)
+  } yield Clic(user.id, user.ip, pageCat, clicType, user.firstInteraction)
 
   val nbInteractionProb: Prob[Int] = flatten(Bernoulli(0.3) to (DiscreteUniform(2 to 3), unit(1)))
 
