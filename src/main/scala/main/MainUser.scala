@@ -9,7 +9,7 @@ import Prob._
 case class User(id: String, ip: String, firstInteraction: Timestamp)
 
 case class Clic(userId: String, ip: String, pageCategory: String, clicType: String, ts: Timestamp) {
-  def addRandomlyMillis: Clic = this.copy(ts = new Timestamp(ts.getTime + Uniform(0, 10000).get.toLong))
+  def addRandomlyMillis: Clic = this.copy(ts = new Timestamp(ts.getTime + Uniform(3 * 60000, 15 * 60000).get.toLong))
 }
 
 object MainUser extends App {
@@ -40,26 +40,19 @@ object MainUser extends App {
 
   userProb.sample(10).foreach(println)
   /*
-User(5c082cc9-2d96-44a9-9250-299a79fbadfd,195.125.203.151,2019-06-15 14:19:18.0)
-User(273b5b0b-8f76-42a0-8f5f-d547681652c9,103.223.225.188,2019-06-18 01:23:33.0)
-User(303e6715-70f5-42ce-b5a3-35be6b7c8f4d,226.180.149.137,2019-06-20 07:05:27.0)
-User(63f2a2a4-e36e-4597-885f-7278f1bf25a6,156.100.182.215,2019-06-17 20:56:07.0)
-User(36eda7d4-dca6-4951-b7db-a11dd9fde3b0,158.206.138.201,2019-06-16 17:54:02.0)
-User(206cf30c-7bf3-42be-9066-ed1601325d24,165.148.240.185,2019-06-15 12:34:48.0)
-User(895061f0-a86d-44c6-be39-41a46b8ce83c,184.255.196.104,2019-06-17 07:25:12.0)
-User(a8a91f55-cb4e-4fe3-83a4-a65d117827f2,110.133.149.112,2019-06-19 04:45:01.0)
-User(5e42f77b-b59d-4d50-9083-30a115ba109f,143.131.115.182,2019-06-20 23:18:29.0)
-User(948a468f-1d45-49cb-af0d-7f8cb8d7b085,122.191.129.240,2019-06-17 14:00:54.0)
+User(8eedb8f9-d908-429b-80aa-49a55b7739c7,242.166.207.216,2019-06-19 23:41:10.0)
+User(7fd84613-956d-4478-b283-ff4ecf48a638,222.194.141.128,2019-06-18 03:26:02.0)
+User(3fce086b-045d-43a4-a750-7749187619d2,131.202.223.119,2019-06-17 19:38:28.0)
+User(49801d5c-5b91-4d08-ae8b-ff7ad57d6d10,110.163.106.129,2019-06-17 16:45:31.0)
+User(c5d88dc8-d9c4-4cb3-924e-8a16e4e18ac3,138.170.148.241,2019-06-19 23:34:40.0)
+User(335d9fbb-5327-4696-826d-502e33f506cf,156.209.107.124,2019-06-19 20:05:48.0)
+User(b8bd7777-b818-4126-9244-0308deeb6433,150.159.220.132,2019-06-21 14:05:10.0)
+User(38a142f8-9198-4816-a390-1714dd1fa05a,240.231.143.223,2019-06-15 10:39:49.0)
+User(db8edccb-cc0b-44b3-a423-56d1d9caded8,223.163.192.208,2019-06-21 10:12:24.0)
+User(dfc5a15c-fb2b-4b1a-b867-8551002cfabd,231.133.154.117,2019-06-18 04:34:46.0)
    */
 
-  val probPageCategory = DiscreteUniform(Seq(
-    "Health",
-    "Sport",
-    "Technology",
-    "Science",
-    "Business",
-    "Entertainment"
-  ))
+  def probPageCategory = DiscreteUniform(Seq("Health", "Sport", "Technology", "Science", "Business", "Entertainment"))
 
   def probType(category: String): Prob[String] =
 
@@ -79,32 +72,29 @@ User(948a468f-1d45-49cb-af0d-7f8cb8d7b085,122.191.129.240,2019-06-17 14:00:54.0)
   val nbInteractionProb: Prob[Int] = flatten(Bernoulli(0.3) to (DiscreteUniform(2 to 3), unit(1)))
 
   val clicsProb: Prob[Seq[Clic]] = map2(userProb, nbInteractionProb) {
-    case (user, nbInt) ⇒
+    case (user: User, nbInt: Int) ⇒
       clicProb(user)
         .sample(nbInt)
-        .map(_.addRandomlyMillis).sortWith { case (c1, c2) ⇒ c1.ts.before(c2.ts) }
+        .map(_.addRandomlyMillis).sortWith { case (c1, c2) ⇒ c1.ts before c2.ts }
   }
 
   clicsProb.sample(10).flatten.foreach(println)
 
   /*
-Clic(8d407101-fb7f-4f18-a108-d9c75f16ffbb,211.252.227.104,Business,stop,2019-06-15 17:09:24.012)
-Clic(8d407101-fb7f-4f18-a108-d9c75f16ffbb,211.252.227.104,Science,stop,2019-06-15 17:09:33.7)
-Clic(b8b3e627-2604-40dd-96a9-e6a1e3d2c311,228.151.152.160,Health,stop,2019-06-20 02:45:11.146)
-Clic(b8b3e627-2604-40dd-96a9-e6a1e3d2c311,228.151.152.160,Health,mute,2019-06-20 02:45:11.925)
-Clic(b8b3e627-2604-40dd-96a9-e6a1e3d2c311,228.151.152.160,Business,stop,2019-06-20 02:45:14.494)
-Clic(3249a672-0593-4db9-a838-2d5e28b8b6e0,152.225.204.160,Science,stop,2019-06-18 06:08:13.888)
-Clic(ec7deb5f-2919-4a3c-912d-111624425e80,197.245.176.180,Health,mute,2019-06-21 04:55:24.367)
-Clic(a8b06959-aa94-4248-bd4d-474208ed8cba,228.224.118.250,Entertainment,stop,2019-06-15 10:49:19.856)
-Clic(a8b06959-aa94-4248-bd4d-474208ed8cba,228.224.118.250,Business,mute,2019-06-15 10:49:22.695)
-Clic(a8b06959-aa94-4248-bd4d-474208ed8cba,228.224.118.250,Entertainment,stop,2019-06-15 10:49:26.494)
-Clic(b21291ef-e7e7-4705-b2e6-22d4b3478374,208.114.140.105,Technology,stop,2019-06-19 11:57:31.069)
-Clic(d69b7916-da49-4443-a1fe-99802a148d89,109.242.184.190,Business,mute,2019-06-16 12:32:16.955)
-Clic(e6cbf703-3275-4116-a80a-d81772a34925,144.117.241.229,Science,stop,2019-06-14 20:21:22.98)
-Clic(e6cbf703-3275-4116-a80a-d81772a34925,144.117.241.229,Health,stop,2019-06-14 20:21:25.792)
-Clic(e6cbf703-3275-4116-a80a-d81772a34925,144.117.241.229,Health,stop,2019-06-14 20:21:27.092)
-Clic(e5122de4-679e-4442-a57b-7eb0ac216e00,112.184.182.148,Health,mute,2019-06-19 04:35:41.613)
-Clic(e5122de4-679e-4442-a57b-7eb0ac216e00,112.184.182.148,Health,mute,2019-06-19 04:35:42.972)
+Clic(68d910a4-6719-489d-b537-695cb7a280a1,146.116.103.120,Science,stop,2019-06-18 00:05:53.808)
+Clic(35874c5e-1819-4229-b2d9-255f19cd9951,139.221.232.220,Business,stop,2019-06-17 11:33:34.082)
+Clic(290566e6-9fa7-4d04-8269-34a13c80980f,175.147.158.224,Health,stop,2019-06-18 14:16:15.708)
+Clic(375692f2-e606-4729-ba41-ff320ab80b7a,138.169.215.146,Business,stop,2019-06-21 19:02:45.642)
+Clic(a8cdf77b-ef32-4348-9073-4567621f5131,140.122.148.247,Sport,start,2019-06-16 02:36:38.694)
+Clic(c6883304-7293-469e-b0c5-f47714800bde,111.215.192.138,Business,mute,2019-06-17 02:00:34.251)
+Clic(c6883304-7293-469e-b0c5-f47714800bde,111.215.192.138,Technology,mute,2019-06-17 02:08:51.915)
+Clic(4a5acbbb-f528-4b88-ad4d-161889746a08,230.208.169.246,Entertainment,stop,2019-06-16 22:56:34.405)
+Clic(1f636b72-e9ac-4f1b-ab72-d4d51e7361af,156.113.125.241,Science,mute,2019-06-19 18:04:10.986)
+Clic(1f636b72-e9ac-4f1b-ab72-d4d51e7361af,156.113.125.241,Business,stop,2019-06-19 18:07:43.216)
+Clic(1f636b72-e9ac-4f1b-ab72-d4d51e7361af,156.113.125.241,Technology,stop,2019-06-19 18:10:59.688)
+Clic(cdca4b19-d8b2-4132-9bda-e1e33e7c69d6,127.146.172.202,Technology,stop,2019-06-15 04:26:12.985)
+Clic(cdca4b19-d8b2-4132-9bda-e1e33e7c69d6,127.146.172.202,Technology,mute,2019-06-15 04:27:58.966)
+Clic(66e9184d-b536-468c-934a-33b24a779404,169.233.155.141,Technology,mute,2019-06-20 08:13:35.569)
    */
 
 }

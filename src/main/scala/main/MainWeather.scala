@@ -77,7 +77,20 @@ object MainWeather extends App {
 
   val probCloudy = Bernoulli(0.16) to (Cloudy, Sunny)
 
-  val weatherMontpellier = weather(meanMtp, stdMtp, probCloudy)
+  val weatherMontpellier: Prob[(Climate, Double)] = weather(meanMtp, stdMtp, probCloudy)
+
+  /*
+(Sunny,25.922122947490735)
+(Cloudy,24.688600650686773)
+(Cloudy,19.044043689961402)
+(Sunny,22.492105538177498)
+(Sunny,28.34775511344805)
+(Sunny,23.094036087090053)
+(Cloudy,21.517907891128125)
+(Sunny,24.773762096303276)
+(Sunny,30.17663571438948)
+(Sunny,26.261115720392127)
+   */
 
   weatherMontpellier.sample(10).foreach(println)
   println(weatherMontpellier.probability({ case (cl, tmp) ⇒ cl == Cloudy && tmp >= 20 }, 1000))

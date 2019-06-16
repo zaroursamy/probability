@@ -9,22 +9,16 @@ import math.pow
   */
 object Pi {
 
-  def generate: Double = {
+  def generate(squareArea: Double = 1, N: Int = 100000, circle: Circle = Circle(0.5, 0.5, 0.5)): Double = {
 
-    val squareArea = 1d
-    val N = 1000000
-    val rayon, cx, cy = 0.5d
+    val uniform = Uniform(0, 1)
 
-    val circle = Circle(cx, cy, rayon)
-
-    val probPointInCircle = for {
-      x ← Uniform(0, 1)
-      y ← Uniform(0, 1)
-    } yield Point(x, y) in circle
+    val probPointInCircle: Prob[Boolean] = map2(uniform, uniform) { case (x, y) ⇒ Point(x, y) in circle }
 
     val probInCircle = probPointInCircle.probability(identity, N)
+
     val circleArea = probInCircle * squareArea
 
-    circleArea / pow(rayon, 2)
+    circleArea / pow(circle.rayon, 2)
   }
 }

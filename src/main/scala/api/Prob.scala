@@ -13,23 +13,24 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
   def sample(n: Int): Stream[T] = Stream.fill(n)(self.get)
 
-  def probability(predicat: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 10000): Double = sample(n).count(predicat).toDouble / n
+  def probability(predicat: T ⇒ Boolean = (_: T) ⇒ true, n: Int = 10000): Double =
+    sample(n).count(predicat).toDouble / n
 
   override def mu(t: T*): Double = t.map(e ⇒ probability(_ == e)).sum
 
+  // functor
+  def map[U](f: T ⇒ U): Prob[U] = Prob(() ⇒ f(get))
+
+  // applicative (+pure)
   def ap[U](fp: Prob[T ⇒ U]): Prob[U] = fp map (_(get))
 
-  def mapp[U](f: T ⇒ U): Prob[U] = Prob(() ⇒ f(get))
-
-  def map[U](f: T ⇒ U): Prob[U] = flatMap(f.andThen(unit))
-
+  // monad (+pure)
   def flatMap[U](f: T ⇒ Prob[U]): Prob[U] = Prob(() ⇒ f(get).get)
 
   def list(n: Int): Prob[Seq[T]] = Prob(() ⇒ sample(n))
 
   def filter(pred: T ⇒ Boolean = _ ⇒ true): Prob[T] = new Prob[T] {
 
-    Nil.flatten
     @tailrec
     override def get: T = {
       val sample = self.get
@@ -44,11 +45,13 @@ trait Prob[T] extends Measurable[T] { self ⇒
 
 object Prob {
 
+  def probTotal[A, B](pA: Prob[A])(f: A ⇒ Prob[B]): Prob[B] = pA flatMap f
+
   def flatten[T](p: Prob[Prob[T]]): Prob[T] = p.flatMap(identity)
 
   def product[A, B](pA: Prob[A], pB: Prob[B]): Prob[(A, B)] = pA.ap(pB.map(b ⇒ (a: A) ⇒ (a, b)))
 
-  def map2[A, B, C](pA: Prob[A], pB: Prob[B])(f: (A, B) ⇒ C): Prob[C] = product(pA, pB).map { case (a, b) ⇒ f(a, b) }
+  def map2[A, B, C](pA: Prob[A], pB: Prob[B])(f: (A, B) ⇒ C): Prob[C] = product(pA, pB) map { case (a, b) ⇒ f(a, b) }
 
   def accept[T](prior: Prob[T], checker: T ⇒ Boolean): T = {
 
@@ -65,8 +68,6 @@ object Prob {
   def apply[T](_get: () ⇒ T): Prob[T] = new Prob[T] {
     override def get: T = _get()
   }
-
-  def apply[T](t: T): Prob[T] = unit(t)
 
   def unit[A](a: A): Prob[A] = Prob(() ⇒ a)
 
@@ -102,7 +103,7 @@ object Prob {
   }
 
   final case class Binomial(n: Int, d: Double) extends Prob[Int] {
-    override def get: Int = Bernoulli(d).sample(n).count(_ == true)
+    override def get: Int = Bernoulli(d) sample (n) count (_ == true)
   }
 
   case object Ip extends Prob[String] {
