@@ -12,6 +12,17 @@ case class Clic(userId: String, ip: String, pageCategory: String, clicType: Stri
   def addRandomlyMillis: Clic = this.copy(ts = new Timestamp(ts.getTime + Uniform(3 * 60000, 15 * 60000).get.toLong))
 }
 
+case class AClic(userId: String, ip: String, pageCategory: String, clicType: String, ts: Long)
+object AClic {
+  def fromClic(clic: Clic) = AClic(
+    userId = clic.userId,
+    ip = clic.ip,
+    pageCategory = clic.pageCategory,
+    clicType = clic.clicType,
+    ts = clic.ts.getTime
+  )
+}
+
 object MainUser extends App {
   lazy val now = Instant.now()
 
