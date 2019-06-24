@@ -8,13 +8,15 @@ import Prob._
 
 case class User(id: String, ip: String, firstInteraction: Timestamp)
 
-case class Clic(userId: String, ip: String, pageCategory: String, clicType: String, ts: Timestamp) {
-  def addRandomlyMillis: Clic = this.copy(ts = new Timestamp(ts.getTime + Uniform(3 * 60000, 15 * 60000).get.toLong))
+case class Event(userId: String, ip: String, pageCategory: String, clicType: String, ts: Timestamp) {
+  def addRandomTs: Event = this.copy(
+    ts = new Timestamp(ts.getTime + Uniform(3 * 60000, 15 * 60000).get.toLong)
+  )
 }
 
-case class AClic(userId: String, ip: String, pageCategory: String, clicType: String, ts: Long)
-object AClic {
-  def fromClic(clic: Clic) = AClic(
+case class AvroEvent(userId: String, ip: String, pageCategory: String, clicType: String, ts: Long)
+object AvroEvent {
+  def fromEvent(clic: Event) = AvroEvent(
     userId = clic.userId,
     ip = clic.ip,
     pageCategory = clic.pageCategory,
@@ -63,49 +65,45 @@ User(db8edccb-cc0b-44b3-a423-56d1d9caded8,223.163.192.208,2019-06-21 10:12:24.0)
 User(dfc5a15c-fb2b-4b1a-b867-8551002cfabd,231.133.154.117,2019-06-18 04:34:46.0)
    */
 
-  def probPageCategory = DiscreteUniform(Seq("Health", "Sport", "Technology", "Science", "Business", "Entertainment"))
+  def probPageCategory: Prob[String] = DiscreteUniform(Seq("Health", "Sport", "Technology", "Science", "Business", "Entertainment"))
 
-  def probType(category: String): Prob[String] =
-
+  def probEventType(category: String): Prob[String] =
     if (Seq("Health", "Technology", "Science", "Business") contains category)
-      product(Bernoulli(0.9), Bernoulli(0.5)) flatMap {
-        case (true, _)     ⇒ DiscreteUniform(Seq("mute", "stop"))
-        case (false, true) ⇒ unit("start")
-        case _             ⇒ DiscreteUniform(Seq("mute", "start", "stop"))
-      }
+      flatten(Bernoulli(0.9) to (DiscreteUniform(Seq("mute", "stop")), unit("start")))
     else DiscreteUniform(Seq("mute", "start", "stop"))
 
-  def clicProb(user: User): Prob[Clic] = for {
+  def eventProb(user: User): Prob[Event] = for {
     pageCat ← probPageCategory
-    clicType ← probType(pageCat)
-  } yield Clic(user.id, user.ip, pageCat, clicType, user.firstInteraction)
+    clicType ← probEventType(pageCat)
+  } yield Event(user.id, user.ip, pageCat, clicType, user.firstInteraction)
 
   val nbInteractionProb: Prob[Int] = flatten(Bernoulli(0.3) to (DiscreteUniform(2 to 3), unit(1)))
 
-  val clicsProb: Prob[Seq[Clic]] = map2(userProb, nbInteractionProb) {
+  val eventProb: Prob[Seq[Event]] = map2(userProb, nbInteractionProb) {
     case (user: User, nbInt: Int) ⇒
-      clicProb(user)
+      eventProb(user)
         .sample(nbInt)
-        .map(_.addRandomlyMillis).sortWith { case (c1, c2) ⇒ c1.ts before c2.ts }
+        .map(_.addRandomTs).sortWith { case (c1, c2) ⇒ c1.ts before c2.ts }
   }
 
-  clicsProb.sample(10).flatten.foreach(println)
-
+  eventProb.sample(10).flatten.foreach(println)
   /*
-Clic(68d910a4-6719-489d-b537-695cb7a280a1,146.116.103.120,Science,stop,2019-06-18 00:05:53.808)
-Clic(35874c5e-1819-4229-b2d9-255f19cd9951,139.221.232.220,Business,stop,2019-06-17 11:33:34.082)
-Clic(290566e6-9fa7-4d04-8269-34a13c80980f,175.147.158.224,Health,stop,2019-06-18 14:16:15.708)
-Clic(375692f2-e606-4729-ba41-ff320ab80b7a,138.169.215.146,Business,stop,2019-06-21 19:02:45.642)
-Clic(a8cdf77b-ef32-4348-9073-4567621f5131,140.122.148.247,Sport,start,2019-06-16 02:36:38.694)
-Clic(c6883304-7293-469e-b0c5-f47714800bde,111.215.192.138,Business,mute,2019-06-17 02:00:34.251)
-Clic(c6883304-7293-469e-b0c5-f47714800bde,111.215.192.138,Technology,mute,2019-06-17 02:08:51.915)
-Clic(4a5acbbb-f528-4b88-ad4d-161889746a08,230.208.169.246,Entertainment,stop,2019-06-16 22:56:34.405)
-Clic(1f636b72-e9ac-4f1b-ab72-d4d51e7361af,156.113.125.241,Science,mute,2019-06-19 18:04:10.986)
-Clic(1f636b72-e9ac-4f1b-ab72-d4d51e7361af,156.113.125.241,Business,stop,2019-06-19 18:07:43.216)
-Clic(1f636b72-e9ac-4f1b-ab72-d4d51e7361af,156.113.125.241,Technology,stop,2019-06-19 18:10:59.688)
-Clic(cdca4b19-d8b2-4132-9bda-e1e33e7c69d6,127.146.172.202,Technology,stop,2019-06-15 04:26:12.985)
-Clic(cdca4b19-d8b2-4132-9bda-e1e33e7c69d6,127.146.172.202,Technology,mute,2019-06-15 04:27:58.966)
-Clic(66e9184d-b536-468c-934a-33b24a779404,169.233.155.141,Technology,mute,2019-06-20 08:13:35.569)
+Event(a717b42b-744f-42bd-a71d-43f0604bf81d,217.232.233.129,Sport,start,2019-06-25 21:49:35.46)
+Event(a717b42b-744f-42bd-a71d-43f0604bf81d,217.232.233.129,Business,stop,2019-06-25 21:50:54.617)
+Event(a717b42b-744f-42bd-a71d-43f0604bf81d,217.232.233.129,Business,stop,2019-06-25 21:54:49.105)
+Event(33613da6-aef0-4131-8cd1-070e82f6a1bf,176.196.237.231,Health,mute,2019-06-25 05:35:41.113)
+Event(33613da6-aef0-4131-8cd1-070e82f6a1bf,176.196.237.231,Health,stop,2019-06-25 05:39:37.432)
+Event(71cd54bc-6db6-4014-8f03-48a618250f28,216.190.194.123,Science,stop,2019-06-26 01:53:14.783)
+Event(71cd54bc-6db6-4014-8f03-48a618250f28,216.190.194.123,Technology,mute,2019-06-26 01:57:14.632)
+Event(053417c2-6920-4887-b4c4-e21335b19003,177.177.172.136,Business,mute,2019-06-27 16:09:02.358)
+Event(053417c2-6920-4887-b4c4-e21335b19003,177.177.172.136,Sport,mute,2019-06-27 16:14:52.372)
+Event(f7eb18b1-5593-417c-b8a6-f44210c45ddc,176.149.200.207,Business,mute,2019-06-25 07:44:04.271)
+Event(72720f43-67b0-4493-8516-b21dff214d4b,132.186.131.166,Technology,stop,2019-06-26 10:02:23.993)
+Event(276013d1-c1c1-4dea-a74d-fed8fc4970b9,102.201.168.178,Sport,mute,2019-06-24 06:51:33.231)
+Event(c4a5da3d-36df-463c-bdb5-9cd7564e076b,106.191.250.144,Health,stop,2019-06-25 00:31:01.658)
+Event(e2c7ae83-83fd-4a49-b082-433f984c70ee,185.128.223.111,Technology,mute,2019-06-24 23:02:33.552)
+Event(e2c7ae83-83fd-4a49-b082-433f984c70ee,185.128.223.111,Technology,stop,2019-06-24 23:03:16.946)
+Event(19314980-aef0-4783-ae57-e552ad996109,147.228.214.213,Health,start,2019-06-25 23:46:11.782)
    */
 
 }

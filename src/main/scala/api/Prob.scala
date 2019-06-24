@@ -21,10 +21,10 @@ trait Prob[T] extends Measurable[T] { self ⇒
   // functor
   def map[U](f: T ⇒ U): Prob[U] = Prob(() ⇒ f(get))
 
-  // applicative (+pure)
+  // applicative (+unit)
   def ap[U](fp: Prob[T ⇒ U]): Prob[U] = fp map (_(get))
 
-  // monad (+pure)
+  // monad (+unit)
   def flatMap[U](f: T ⇒ Prob[U]): Prob[U] = Prob(() ⇒ f(get).get)
 
   def list(n: Int): Prob[Seq[T]] = Prob(() ⇒ sample(n))
@@ -98,7 +98,7 @@ object Prob {
   }
 
   final case class Bernoulli(d: Double) extends Prob[Boolean] {
-    override def get: Boolean = Uniform(0, 1).get <= d
+    override def get: Boolean = Uniform(0, 1).map(_ <= d).get
     def to[T](succ: T, echec: T): Prob[T] = this.map(b ⇒ if (b) succ else echec)
   }
 
@@ -118,14 +118,12 @@ object Prob {
 
     override def get: Double = {
 
-      val n01 = (
-        for {
-          u1 ← Uniform(0, 1)
-          u2 ← Uniform(0, 1)
-        } yield math.sqrt(-2 * math.log(u1)) * math.cos(2 * math.Pi * u2)
-      ).get
+      val n01 = map2(Uniform(0, 1), Uniform(0, 1)) {
+        case (u1, u2) ⇒
+          math.sqrt(-2 * math.log(u1)) * math.cos(2 * math.Pi * u2)
+      }
 
-      mean + std * n01
+      mean + std * n01.get
     }
   }
 
