@@ -14,13 +14,13 @@ case class Event(userId: String, ip: String, pageCategory: String, clicType: Str
   )
 }
 
-case class AvroEvent(userId: String, ip: String, pageCategory: String, clicType: String, ts: Long)
+case class AvroEvent(userId: String, ip: String, pageCategory: String, eventType: String, ts: Long)
 object AvroEvent {
   def fromEvent(clic: Event) = AvroEvent(
     userId = clic.userId,
     ip = clic.ip,
     pageCategory = clic.pageCategory,
-    clicType = clic.clicType,
+    eventType = clic.clicType,
     ts = clic.ts.getTime
   )
 }
