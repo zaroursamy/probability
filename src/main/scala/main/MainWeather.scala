@@ -51,7 +51,11 @@ object MainWeather extends App {
   //    Decembre -> 36
   //  )
 
-  def weather(mean: Map[Climate, Int], std: Map[Climate, Int], probClimate: Prob[Climate]): Prob[(Climate, Double)] = {
+  def weather(
+    mean:        Map[Climate, Int],
+    std:         Map[Climate, Int],
+    probClimate: Prob[Climate]
+  ): Prob[(Climate, Double)] = {
 
     def probTemperature(climate: Climate) = Normal(
       mean(climate),
